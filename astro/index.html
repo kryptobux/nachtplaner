@@ -278,23 +278,78 @@ details.add[open]>summary{margin-bottom:4px}
 .np-fig a{color:var(--ink-2)}
 [data-theme="rot"] .np-bild{filter:grayscale(1) brightness(.45) sepia(1) hue-rotate(-50deg) saturate(8)}
 
-/* ---------- Desktop: Karte links, Spalte rechts ---------- */
+/* ---------- Desktop: Leiste links, Karte mit Kopf- und Zeitleiste, Spalte rechts (Entwurf 04.11.2026) ---------- */
+.rail,.deskhead,.desktime,.split,.panelopen{display:none}
+.keys{position:absolute;left:calc(var(--rail,0px) + 14px);bottom:calc(var(--time,var(--tab-h)) + 14px);z-index:60;width:min(330px,calc(100% - 28px));padding:14px 16px;border-radius:12px;border:1px solid var(--line-2);background:var(--panel);display:flex;flex-direction:column;gap:7px;font-size:14px;color:var(--ink-2)}
+.keys b{color:var(--ink);font-size:16px}
+.keys[hidden]{display:none}
+kbd{font-family:var(--font-mono);font-size:12px;padding:1px 5px;border:1px solid var(--line-2);border-radius:4px;background:var(--panel-2);color:var(--ink)}
 @media (min-width:1000px) and (min-height:600px){
   body{background:var(--bg)}
-  #app{--col:clamp(400px,34vw,480px);width:100%;max-width:none;height:100vh;height:100dvh;margin:0;border:0;border-radius:0;box-shadow:none}
+  #app{--rail:76px;--head:56px;--time:134px;--split:10px;--col:440px;width:100%;max-width:none;height:100vh;height:100dvh;margin:0;border:0;border-radius:0;box-shadow:none}
+  #app[data-panel="zu"]{--col:0px;--split:0px}
+  #app[data-panel="zu"] .sheet,#app[data-panel="zu"] .page,#app[data-panel="zu"] .detail,#app[data-panel="zu"] .split{display:none!important}
+  .tabbar,.topbar,.scrim{display:none!important}
   .stage{inset:0}
   .stage[hidden]{display:block}
-  #sky{width:calc(100% - var(--col))}
-  .topbar{right:var(--col)}
-  .fabs.r{right:calc(var(--col) + 8px)}
-  .hint{left:calc((100% - var(--col)) / 2)}
-  .sheet{left:auto;right:0;top:0;bottom:var(--tab-h);width:var(--col);height:auto!important;border-radius:0;border:0;border-left:1px solid var(--line)}
+  #sky{left:var(--rail);top:var(--head);width:calc(100% - var(--rail) - var(--col) - var(--split));height:calc(100% - var(--head) - var(--time))}
+  .fabs.l{left:calc(var(--rail) + 10px);top:calc(var(--head) + 10px)}
+  .fabs.r{right:calc(var(--col) + var(--split) + 10px);top:calc(var(--head) + 10px)}
+  .stage[data-mode="himmel"] .fabs{top:calc(var(--head) + 10px)}
+  .pop{left:calc(var(--rail) + 66px);top:calc(var(--head) + 10px)}
+  .hint{top:calc(var(--head) + 12px);left:calc(var(--rail) + (100% - var(--rail) - var(--col) - var(--split)) / 2)}
+  .sheet{left:auto;right:0;top:0;bottom:0;width:var(--col);height:auto!important;border-radius:0;border:0;border-left:1px solid var(--line)}
   .sheet .grab,#szBtn{display:none}
-  .sheet-head{cursor:default;padding-top:10px}
-  .page{left:auto;width:var(--col);border-left:1px solid var(--line);z-index:12}
-  .tabbar{left:auto;width:var(--col);border-left:1px solid var(--line)}
-  .detail{left:auto;right:0;top:0;bottom:var(--tab-h);width:var(--col);height:auto;border-radius:0;border:0;border-left:1px solid var(--line-2)}
-  .scrim{display:none!important}
+  .sheet-head{cursor:default;padding-top:6px}
+  .page{left:auto;right:0;top:0;bottom:0;width:var(--col);border-left:1px solid var(--line);z-index:12}
+  .page .nights,#pg-ziele .segc{display:none}
+  .detail{left:auto;right:0;top:0;bottom:0;width:var(--col);height:auto;border-radius:0;border:0;border-left:1px solid var(--line-2)}
+
+  .rail{position:absolute;left:0;top:0;bottom:0;width:var(--rail);display:flex;flex-direction:column;gap:4px;padding:10px 6px;background:var(--panel);border-right:1px solid var(--line);z-index:20}
+  .rail .tab{min-height:62px;border-radius:10px;font-size:12.5px;gap:4px}
+  .rail .tab[aria-current="page"]{background:var(--panel-2);color:var(--ink);box-shadow:inset 3px 0 0 var(--accent)}
+  .rail .tab[aria-current="page"]::before{display:none}
+  .rail .tab:hover{color:var(--ink)}
+  .rgap{flex:1}
+  .rkeys{height:44px;border:1px solid var(--line-2);border-radius:10px;background:none;color:var(--ink-2);font-family:var(--font-mono);font-size:16px}
+
+  .deskhead{position:absolute;left:var(--rail);right:calc(var(--col) + var(--split));top:0;height:var(--head);display:flex;align-items:center;gap:16px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--line);z-index:6;white-space:nowrap;overflow:hidden}
+  .dh-loc{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--line-2);background:var(--panel-2);color:var(--ink);display:flex;align-items:center;gap:6px;font-weight:600;flex:none}
+  .dh-n{font-size:17px}
+  .dh-f{color:var(--ink-2)}
+  .dh-f b{color:var(--ink);font-weight:500}
+  .dh-n,.dh-f{min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .sheet .headline .clock,.sheet #playBtn{display:none}
+  .dh-v{flex:none;margin-left:auto;padding:4px 10px;border-radius:6px;border:1px solid var(--accent);color:var(--accent);font-weight:700}
+  .dh-v.off{border-color:var(--line-2);color:var(--ink-2)}
+
+  .desktime{position:absolute;left:var(--rail);right:calc(var(--col) + var(--split));bottom:0;height:var(--time);display:flex;flex-direction:column;gap:6px;padding:8px 14px 8px;background:var(--panel);border-top:1px solid var(--line);z-index:6}
+  .dt-row{display:flex;align-items:center;gap:6px}
+  .dt-nights{flex:0 1 660px;min-width:0}
+  .dt-nights .nights{display:grid}
+  .dt-step{flex:none;width:38px;height:44px;border-radius:9px;border:1px solid var(--line-2);background:var(--panel-2);color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:18px}
+  .dt-gap{flex:1}
+  .dt-clock{font-family:var(--font-mono);font-size:26px;font-weight:500;min-width:84px;text-align:right}
+  .dt-scrub .scrub{padding:0;height:56px}
+
+  .split{position:absolute;top:0;bottom:0;right:var(--col);width:var(--split);display:flex;cursor:col-resize;align-items:center;justify-content:center;background:var(--panel);border-left:1px solid var(--line);z-index:15;touch-action:none;outline:none}
+  .split i{width:3px;height:44px;border-radius:2px;background:var(--line-2)}
+  .split:hover i,.split.on i,.split:focus-visible i{background:var(--accent)}
+  .panelopen:not([hidden]){position:absolute;right:0;top:50%;transform:translateY(-50%);width:30px;height:76px;border:1px solid var(--line-2);border-right:0;border-radius:10px 0 0 10px;background:var(--panel);color:var(--ink);font-size:20px;z-index:16;display:flex;align-items:center;justify-content:center}
+
+  .ztab{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+  .ztab th{text-align:left;color:var(--ink-3);font-weight:600;padding:6px 4px;font-size:13px;white-space:nowrap}
+  .ztab th.r{text-align:right}
+  .ztab th button{border:0;background:none;color:inherit;font:inherit;padding:0;cursor:pointer}
+  .ztab th button[aria-pressed="true"]{color:var(--ink)}
+  .ztab td{padding:7px 4px;border-top:1px solid var(--line);vertical-align:middle}
+  .ztab tr[data-zsel]{cursor:pointer}
+  .ztab tr[data-zsel]:hover{background:var(--panel-2)}
+  .ztab tr.on{background:var(--panel-2);box-shadow:inset 3px 0 0 var(--accent)}
+  .ztab .n{font-weight:600}
+  .ztab .m{font-family:var(--font-mono);font-size:13px;white-space:nowrap}
+  .ztab .r{text-align:right}
+  .ztab .s svg{display:block}
 }
 </style>
 <div id="app" data-rm="0">
@@ -372,7 +427,7 @@ details.add[open]>summary{margin-bottom:4px}
       <button class="grab" id="grab" aria-label="Sheet vergrößern oder verkleinern" aria-expanded="false"></button>
       <div class="headline" id="headline"></div>
     </div>
-    <div class="scrub">
+    <div class="scrub" id="scrub">
       <button class="step" id="tMinus" aria-label="Eine Stunde zurück">−1 h</button>
       <div id="slider" role="slider" tabindex="0" aria-label="Uhrzeit der Nacht" aria-valuemin="960" aria-valuemax="1920" aria-valuenow="1200" aria-valuetext="20:00"></div>
       <button class="step" id="tPlus" aria-label="Eine Stunde vor">+1 h</button>
@@ -381,6 +436,32 @@ details.add[open]>summary{margin-bottom:4px}
   </section>
 </main>
 
+<nav class="rail" id="rail" aria-label="Bereiche">
+  <button class="tab rtab" data-tab="nacht"><svg width="24" height="24" aria-hidden="true"><use href="#i-nacht"/></svg>Nacht</button>
+  <button class="tab rtab" data-tab="ziele"><svg width="24" height="24" aria-hidden="true"><use href="#i-ziele"/></svg>Ziele</button>
+  <button class="tab rtab" data-tab="himmel"><svg width="24" height="24" aria-hidden="true"><use href="#i-himmel"/></svg>Himmel</button>
+  <button class="tab rtab" data-tab="plan"><svg width="24" height="24" aria-hidden="true"><use href="#i-plan"/></svg>Plan</button>
+  <button class="tab rtab" data-tab="setup"><svg width="24" height="24" aria-hidden="true"><use href="#i-setup"/></svg>Setup</button>
+  <span class="rgap"></span>
+  <button class="rkeys" id="railKeys" aria-label="Tastenkürzel anzeigen" aria-expanded="false">?</button>
+</nav>
+<header class="deskhead" id="deskHead"></header>
+<section class="desktime" id="deskTime" aria-label="Nacht und Uhrzeit">
+  <div class="dt-row"><button class="dt-step" id="dtPrev" aria-label="Vorige Woche">‹</button><div class="dt-nights" id="dtNights"></div><button class="dt-step" id="dtNext" aria-label="Nächste Woche">›</button>
+    <span class="dt-gap"></span><button class="dt-step" id="dtPlay" aria-label="Zeitraffer starten"><svg width="20" height="20" aria-hidden="true"><use href="#i-play"/></svg></button><span class="dt-clock" id="dtClock">00:00</span></div>
+  <div class="dt-scrub" id="dtScrub"></div>
+</section>
+<div class="split" id="split" role="separator" aria-orientation="vertical" aria-label="Breite der Spalte, Pfeiltasten ändern, Eingabe klappt ein" tabindex="0"><i></i></div>
+<button class="panelopen" id="panelOpen" hidden aria-label="Spalte einblenden">‹</button>
+<div class="keys" id="keysPop" hidden role="dialog" aria-label="Tastenkürzel">
+  <b>Tastenkürzel</b>
+  <span><kbd>←</kbd> <kbd>→</kbd> Zeit ±5 min, mit <kbd>Umschalt</kbd> ±1 h</span>
+  <span><kbd>Leertaste</kbd> Zeitraffer an/aus</span>
+  <span><kbd>Bild↑</kbd> <kbd>Bild↓</kbd> vorige/nächste Nacht</span>
+  <span><kbd>1</kbd>–<kbd>5</kbd> Nacht, Ziele, Himmel, Plan, Setup</span>
+  <span><kbd>[</kbd> Spalte ein/aus · Trenner ziehen ändert die Breite</span>
+  <span><kbd>+</kbd> <kbd>−</kbd> Zoom · <kbd>Esc</kbd> Auswahl weg · <kbd>?</kbd> diese Liste</span>
+</div>
 <section class="page" id="pg-ziele" hidden aria-label="Ziele"></section>
 <section class="page" id="pg-plan" hidden aria-label="Plan"></section>
 <section class="page" id="pg-setup" hidden aria-label="Setup"></section>
@@ -1220,7 +1301,7 @@ const ptrs=new Map();
 let B={fx:0,fy:0,fz:1,ux:0,uy:-1,uz:0,rx:1,ry:0},SC=100,CX=200,CY=250,baseS=100,VR={x:0,y:72,w:300,h:300};
 function camBasis(az0,alt0){const a=alt0*D2R,A=az0*D2R,ca=Math.cos(a),sa=Math.sin(a),sA=Math.sin(A),cA=Math.cos(A);
   return {fx:ca*sA,fy:ca*cA,fz:sa,ux:-sa*sA,uy:-sa*cA,uz:ca,rx:cA,ry:-sA};}
-function topInset(){return S.tab==='nacht'?72:62;}
+function topInset(){return isDesk()?8:S.tab==='nacht'?72:62;}
 function layoutCam(){
   VR={x:0,y:topInset(),w:CW,h:Math.max(90,CH-topInset()-(isDesk()?0:sheetH))};
   const R=Math.max(40,Math.min(CW/2-30,VR.h/2-22));
@@ -1512,7 +1593,7 @@ function draw(){
 
   /* Zielbahnen */
   const k0=Math.max(0,Math.floor(NV.d0/15)),k1=Math.min(64,Math.ceil(NV.d1/15));
-  const selT=S.sel!=null?NV.targets[S.sel]:null;
+  const selT=S.sel!=null?NV.targets[S.sel]:(isDesk()&&S.zsel!=null&&NV.targets[S.zsel]?NV.targets[S.zsel]:null);
   if(S.layers.tracks){
     ctx.lineCap='round';ctx.lineJoin='round';
     for(const T of NV.targets){
@@ -1709,7 +1790,7 @@ let moonTipTimer=0;
 function showMoonTip(){
   if(!MOONPOS)return;const el=$('#moonTip');const m=N.mond;
   el.innerHTML='<b>Mond</b> · '+m.beleuchtet_prozent+' % '+(m.zunehmend?'zunehmend':'abnehmend')+'<br>Höhe '+fmt(MOONPOS.alt,0)+'° · Az '+fmt(MOONPOS.az,0)+'°';
-  el.hidden=false;el.style.left=clamp(MOONPOS.x-60,8,CW-150)+'px';el.style.top=clamp(MOONPOS.y+16,VR.y,CH-70)+'px';
+  el.hidden=false;el.style.left=(cv.offsetLeft+clamp(MOONPOS.x-60,8,CW-150))+'px';el.style.top=(cv.offsetTop+clamp(MOONPOS.y+16,VR.y,CH-70))+'px';
   clearTimeout(moonTipTimer);moonTipTimer=setTimeout(hideMoonTip,4200);
 }
 function hideMoonTip(){$('#moonTip').hidden=true;}
@@ -2013,6 +2094,7 @@ function renderNights(){
     return '<button class="night" role="tab" aria-selected="'+(i===S.ni)+'" data-ni="'+i+'" aria-label="'+WDL[dp.wd]+', '+dp.d+'. '+MON[dp.m-1]+'. Nachtstufe '+lvTxt(V)+'. Mond '+m.beleuchtet_prozent+' Prozent.'+(i===bestNi?' Beste Nacht der Woche.':'')+'"><b>'+WD[dp.wd]+' '+dp.d+'.</b>'+moonSvg(15,m.beleuchtet_prozent/100,m.zunehmend)+(V.noWx?'<span class="nowx">ohne Wetter</span>':levelBars(V.level,22,10,true))+(i===bestNi?'<i class="best"></i>':'')+'</button>';}).join('')
     +'<label class="night datepick" aria-label="Andere Woche: Startdatum wählen"><b>Datum</b>'+ico('plus',15)+'<input type="date" id="datePick" value="'+S.start+'"></label>';
   $('#hNight').textContent=N.titel+' · '+curLoc().name.split(',')[0];
+  renderDeskHead();
 }
 function renderHeadline(){
   const T=S.sel!=null?NV.targets[S.sel]:null,vt=verdictText(NV);
@@ -2044,6 +2126,8 @@ function renderSlider(){
     s+='<rect x="'+(X(i*60)-hw/2).toFixed(1)+'" y="'+(47-bh).toFixed(1)+'" width="'+hw.toFixed(1)+'" height="'+bh.toFixed(1)+'" '+(clr?'style="fill:var(--accent)"':'style="fill:var(--ink-3)"')+'/>';});
   s+='<line x1="'+pl+'" x2="'+(pl+pw)+'" y1="47.5" y2="47.5" style="stroke:var(--line-2)"/>';
   s+='<rect x="'+pl+'" y="12" width="'+(X(V.d0)-pl).toFixed(1)+'" height="38" style="fill:var(--panel)" fill-opacity=".55"/><rect x="'+X(V.d1).toFixed(1)+'" y="12" width="'+(pl+pw-X(V.d1)).toFixed(1)+'" height="38" style="fill:var(--panel)" fill-opacity=".55"/>';
+  {const T=S.sel!=null?V.targets[S.sel]:(S.zsel!=null?V.targets[S.zsel]:null);
+   if(T){const d=T.alt.map((a,k)=>(k?'L':'M')+X(k*15).toFixed(1)+' '+(47-clamp(a,0,90)/90*35).toFixed(1)).join('');s+='<path d="'+d+'" fill="none" style="stroke:var(--accent)" stroke-width="2.2"/>';}}
   s+='<g id="thumb"><line x1="0" x2="0" y1="0" y2="52" style="stroke:var(--ink)" stroke-width="2"/><rect x="-6" y="15" width="12" height="22" rx="3" style="fill:var(--ink);stroke:var(--panel)" stroke-width="2"/></g></svg>';
   el.innerHTML=s;
 }
@@ -2056,6 +2140,7 @@ function updateTimeUI(){
   const th=$('#thumb');if(th)th.setAttribute('transform','translate('+x.toFixed(1)+' 0)');
   const sl=$('#slider');sl.setAttribute('aria-valuenow',Math.round(t)+960);sl.setAttribute('aria-valuetext',hhmm(t)+' Uhr, '+twilightName(lerpArr(N.sonne_hoehe_15min,t)));
   const ck=$('#clock');if(ck)ck.textContent=hhmm(t);
+  const dc=$('#dtClock');if(dc)dc.textContent=hhmm(t);
   $$('[data-cur]').forEach(g=>{const svg=g.ownerSVGElement,pl=+svg.dataset.pl,pw=+svg.dataset.pw,W=+svg.getAttribute('width'),t0=+svg.dataset.t0||0,sp=+svg.dataset.sp||960;const cx=pl+(t-t0)/sp*pw;
     g.style.visibility=(t<t0||t>t0+sp)?'hidden':'visible';g.setAttribute('transform','translate('+cx.toFixed(1)+' 0)');
     const tg=g.querySelector('.tg');if(tg){const dx=clamp(cx,pl+8,W-22)-cx;tg.setAttribute('transform','translate('+dx.toFixed(1)+' 0)');tg.querySelector('text').textContent=hhmm(t);}});
@@ -2096,7 +2181,7 @@ function bindChartScrub(root){
     svg.addEventListener('pointermove',e=>{if(svg.hasPointerCapture&&svg.hasPointerCapture(e.pointerId))setTime(at(e));});
   });
 }
-function syncPlay(){const b=$('#playBtn');if(b){b.innerHTML=ico(S.playing?'pause':'play',22);b.setAttribute('aria-label',S.playing?'Zeitraffer anhalten':'Zeitraffer starten');}}
+function syncPlay(){syncPlayDesk();const b=$('#playBtn');if(b){b.innerHTML=ico(S.playing?'pause':'play',22);b.setAttribute('aria-label',S.playing?'Zeitraffer anhalten':'Zeitraffer starten');}}
 let playAcc=0;
 function stepPlay(dt){
   if(!S.playing)return;
@@ -2282,9 +2367,20 @@ function renderZiele(){
    +'</div>'
    +'<div class="page-in" style="padding-top:0">';
   if(F.band)h+='<p class="note" style="margin-top:8px">Mondregel '+F.band+': ab '+MOONF[F.band]+'° Abstand, oder Mond im Fenster unter dem Horizont. Richtwerte aus Foren, in der App später einstellbar.</p>';
+  if(isDesk()&&list.length){h+=zieleTabelle(list,pg.clientWidth||440);h+='</div>';const st=pg.scrollTop;pg.innerHTML=h;pg.scrollTop=st;return;}
   h+=list.length?list.map(T=>tgtRow(T,{w:spw})).join(''):'<p class="verdict-sub2" style="margin-top:16px">Kein Ziel erfüllt die Filter. Filter lösen, um mehr zu sehen.</p>';
   h+='</div>';
   const st=pg.scrollTop;pg.innerHTML=h;pg.scrollTop=st;
+}
+function zieleTabelle(list,W){
+  const wide=W>=540,th=(k,l,r)=>'<th scope="col"'+(r?' class="r"':'')+'>'+(k?'<button data-sort="'+k+'" aria-pressed="'+(S.sort===k)+'">'+l+(S.sort===k?' ↓':'')+'</button>':l)+'</th>';
+  let h='<table class="ztab"><thead><tr>'+th('', 'Ziel')+th('', 'Fenster')+th('zeit','nutzbar',1)+th('klar','klar',1)+th('hoehe','max',1)+(wide?th('mond','Mond',1)+th('', 'Bildfeld'):'')+th('', 'Höhe')+'</tr></thead><tbody>';
+  for(const T of list){
+    const on=S.zsel===T.i,w=T.win.length?hhmm(T.win[0][0])+'–'+hhmm(T.win[T.win.length-1][1]):'–';
+    h+='<tr data-zsel="'+T.i+'" class="'+(on?'on':'')+'" tabindex="0" aria-selected="'+on+'"><td class="n">'+esc(T.name)+'</td><td class="m">'+w+'</td><td class="r m">'+fmt(T.useH,1)+'</td><td class="r m">'+fmt(T.clearH,1)+'</td><td class="r m">'+(T.maxAlt!=null?fmt(T.maxAlt,0)+'°':'–')+'</td>'
+      +(wide?'<td class="r m">'+fmt(T.moonDist,0)+'°</td><td>'+esc(T.fov)+'</td>':'')+'<td class="s">'+spark(T,96,26)+'</td></tr>';
+  }
+  return h+'</tbody></table><p class="note">Klick auf eine Zeile zeigt das Ziel auf der Karte und seine Höhe im Zeitband, ein zweiter Klick öffnet das Detail. Breiter gezogen kommen Mond und Bildfeld dazu.</p>';
 }
 function nightCells(){
   return NVS.map((V,i)=>{const dp=V.mdate,m=V.n.mond;
@@ -2631,6 +2727,61 @@ function setTab(tab){
     $('#pg-'+tab).scrollTop=$('#pg-'+tab).scrollTop;
   }
 }
+/* ---------- Desktop: Kopfzeile, Zeitleiste, Spalte, Tastenkürzel ---------- */
+function renderDeskHead(){
+  const el=$('#deskHead');if(!el||!NV)return;const V=NV,m=V.n.mond,vt=verdictText(V);
+  el.innerHTML='<button class="dh-loc" id="dhLoc">'+ico('pin',18)+'<span>'+esc(curLoc().name.split(',')[0])+'</span> ▾</button>'
+    +'<b class="dh-n">'+esc(N.titel)+'</b><span class="dh-f">dunkel <b class="mono">'+hhmm(V.d0)+'–'+hhmm(V.d1)+'</b></span>'
+    +'<span class="dh-f">Mond <b style="color:var(--moon)">'+m.beleuchtet_prozent+' %</b>'+(V.moonFirst!=null&&V.moonFirst>V.d0?' ab <b class="mono">'+hhmm(V.moonFirst)+'</b>':V.moonUpMin?'':' unter dem Horizont')+'</span>'
+    +'<span class="dh-v'+(V.noWx?' off':'')+'">'+esc(vt.s1)+'</span>';
+}
+let deskOn=null;
+/* Nachtband und Zeitleiste wandern am Desktop unter die Karte, am Handy zurück ins Sheet */
+function applyDeskLayout(){
+  const d=isDesk();if(d===deskOn)return;deskOn=d;
+  const nights=$('#nights'),scrub=$('#scrub');
+  if(d){$('#dtNights').appendChild(nights);$('#dtScrub').appendChild(scrub);}
+  else{$('#btnLoc').after(nights);$('#sheetHead').after(scrub);}
+  const w=store.get('col',null);if(w)$('#app').style.setProperty('--col',w+'px');
+  setPanel(store.get('panel',true),true);
+}
+function setPanel(open,quiet){
+  $('#app').dataset.panel=open?'auf':'zu';$('#panelOpen').hidden=open||!isDesk();
+  if(!quiet)store.set('panel',open);resizeCanvas();renderSlider();dirty=true;uiDirty=true;
+}
+function toggleKeys(){const p=$('#keysPop'),b=$('#railKeys');p.hidden=!p.hidden;b.setAttribute('aria-expanded',!p.hidden);}
+(function bindSplit(){
+  const sp=$('#split');let d=null;
+  const setCol=w=>{w=clamp(Math.round(w),340,Math.min(760,Math.round(window.innerWidth*.55)));$('#app').style.setProperty('--col',w+'px');store.set('col',w);resizeCanvas();dirty=true;};
+  const cur=()=>parseFloat(getComputedStyle($('#app')).getPropertyValue('--col'))||440;
+  sp.addEventListener('pointerdown',e=>{cap(sp,e.pointerId);d={x:e.clientX,w:cur()};sp.classList.add('on');e.preventDefault();});
+  sp.addEventListener('pointermove',e=>{if(d)setCol(d.w-(e.clientX-d.x));});
+  const end=()=>{if(!d)return;d=null;sp.classList.remove('on');renderSlider();if(S.tab==='ziele')renderZiele();else if(isMapTab())renderSheet();};
+  sp.addEventListener('pointerup',end);sp.addEventListener('pointercancel',end);
+  sp.addEventListener('dblclick',()=>{setCol(440);end();});
+  sp.addEventListener('keydown',e=>{
+    if(e.key==='ArrowLeft'||e.key==='ArrowRight'){setCol(cur()+(e.key==='ArrowLeft'?20:-20));renderSlider();e.preventDefault();}
+    else if(e.key==='Enter'){setPanel($('#app').dataset.panel==='zu');e.preventDefault();}
+    else if(e.key==='Home'){setCol(340);renderSlider();e.preventDefault();}else if(e.key==='End'){setCol(760);renderSlider();e.preventDefault();}
+  });
+})();
+document.addEventListener('keydown',e=>{
+  const t=e.target;if(e.ctrlKey||e.metaKey||e.altKey)return;
+  if(t&&(t.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)))return;
+  if(t&&t.closest&&(t.closest('#slider')||t.closest('#split')))return; // eigene Tasten
+  const k=e.key;let ok=true;
+  if(k==='ArrowRight'||k==='ArrowLeft'){if(t===cv)return;const st=e.shiftKey?60:5;setTime(Math.round((S.t+(k==='ArrowRight'?st:-st))/st)*st);}
+  else if(k===' '){if(t&&t.tagName==='BUTTON')return;S.playing=!S.playing;if(S.playing&&S.t>=960)S.t=0;syncPlay();}
+  else if(k==='PageDown'){if(S.ni<NVS.length-1)setNight(S.ni+1);}else if(k==='PageUp'){if(S.ni>0)setNight(S.ni-1);}
+  else if(/^[1-5]$/.test(k)){setTab(['nacht','ziele','himmel','plan','setup'][+k-1]);}
+  else if(k==='['&&isDesk()){setPanel($('#app').dataset.panel==='zu');}
+  else if(k==='+'||k==='='){zoomBy(1.5);}else if(k==='-'){zoomBy(1/1.5);}
+  else if(k==='?'){toggleKeys();}
+  else if(k==='Escape'&&isDesk()&&S.zsel!=null&&$('#detail').hidden){S.zsel=null;if(S.tab==='ziele')renderZiele();renderSlider();dirty=true;}
+  else ok=false;
+  if(ok)e.preventDefault();
+});
+function syncPlayDesk(){const b=$('#dtPlay');if(b){b.innerHTML=ico(S.playing?'pause':'play',20);b.setAttribute('aria-label',S.playing?'Zeitraffer anhalten':'Zeitraffer starten');}}
 function setTheme(th,quiet){
   S.theme=th;document.documentElement.setAttribute('data-theme',th==='rot'?'rot':'nacht');
   store.set('theme',th);readPalette();
@@ -2650,6 +2801,13 @@ document.addEventListener('click',e=>{
   if((el=t.closest('.tab'))){setTab(el.dataset.tab);return;}
   if((el=t.closest('[data-ni]'))){setNight(+el.dataset.ni);return;}
   if((el=t.closest('[data-layer]'))){const k=el.dataset.layer;S.layers[k]=!S.layers[k];store.set('layers',S.layers);$$('[data-layer]').forEach(b=>b.setAttribute('aria-pressed',S.layers[b.dataset.layer]));dirty=true;return;}
+  if((el=t.closest('[data-zsel]'))){const i=+el.dataset.zsel;if(S.zsel===i)openDetail(i);else{S.zsel=i;renderZiele();renderSlider();uiDirty=true;dirty=true;}return;}
+  if((el=t.closest('#dtPlay'))){S.playing=!S.playing;if(S.playing&&S.t>=960)S.t=0;syncPlay();return;}
+  if((el=t.closest('#dtPrev'))){setStart(Rechnen.isoPlus(S.start,-7));return;}
+  if((el=t.closest('#dtNext'))){setStart(Rechnen.isoPlus(S.start,7));return;}
+  if((el=t.closest('#railKeys'))){toggleKeys();return;}
+  if((el=t.closest('#panelOpen'))){setPanel(true);return;}
+  if((el=t.closest('#dhLoc'))){S.setupTab='orte';setTab('setup');return;}
   if((el=t.closest('[data-sel]'))){
     const i=+el.dataset.sel;
     if(el.closest('#pg-ziele'))openDetail(i);else selectTarget(i);return;
@@ -2773,6 +2931,7 @@ async function init(){
   { const bt=bestTimeFor(NV.best);S.t=bt!=null&&NV.best.clearH>0?bt:Math.round((NV.d0+NV.d1)/20)*10; }
   S.check=selfCheck();
   console.info('[Prüfung] '+(S.check.engine?'Astronomy Engine':'Rückfallrechnung')+': '+S.check.name+', '+S.check.n+' Zeitpunkte, größte Abweichung Höhe '+S.check.dAlt.toFixed(3)+'°, Azimut '+S.check.dAz.toFixed(3)+'° ('+S.check.dAzSky.toFixed(3)+'° am Himmel); Vorberechnung auf 0,1° und 1° gerundet');
+  applyDeskLayout();
   buildPop();updatePin();
   renderNights();
   S.snapName='half';
@@ -2788,7 +2947,9 @@ async function init(){
   ro.observe($('#app'));
   RM_MQ.addEventListener&&RM_MQ.addEventListener('change',()=>{$('#app').dataset.rm=reduced()?'1':'0';});
   const deskHint=()=>{const hn=$('#hint');if(hn)hn.textContent=isDesk()?'Ziehen dreht · Mausrad zoomt · Klick wählt':'Ziehen dreht · zwei Finger zoomen · Tippen wählt';};deskHint();
-  DESK_MQ.addEventListener&&DESK_MQ.addEventListener('change',()=>{deskHint();setTab(S.tab);resizeCanvas();renderSheet();dirty=true;});
+  const deskWechsel=()=>{if(isDesk()===deskOn)return;applyDeskLayout();deskHint();setTab(S.tab);resizeCanvas();renderSheet();dirty=true;};
+  // matchMedia meldet nicht in jedem Browser einen Wechsel, deshalb auch beim Größenändern prüfen
+  DESK_MQ.addEventListener&&DESK_MQ.addEventListener('change',deskWechsel);window.addEventListener('resize',deskWechsel);
   requestAnimationFrame(loop);
   setTimeout(()=>{const hn=$('#hint');if(hn)hn.hidden=true;},7000);
   cv.addEventListener('pointerdown',()=>{const hn=$('#hint');if(hn)hn.hidden=true;},{once:true});

@@ -2,7 +2,7 @@
    Seiten der App: erst Netz (damit neue Versionen sofort kommen), ohne Netz aus dem Speicher.
    Schriften: aus dem Speicher, nebenbei erneuert. Wetter (Open-Meteo, wetter7.php): immer live, nie gespeichert;
    die App hält ihre letzte Vorhersage selbst im Browserspeicher. */
-const VERSION = 'np-191df55ad2';
+const VERSION = 'np-7a828b2214';
 const KERN = ['./', 'index.html', 'manifest.webmanifest', 'symbol-192.png', 'symbol-512.png', 'symbol-maskierbar-512.png',
   'horizont/', 'horizont/index.html', 'horizont/astronomy.browser.min.js'];
 
