@@ -277,6 +277,25 @@ details.add[open]>summary{margin-bottom:4px}
 .np-fig figcaption{font-size:12.5px;color:var(--ink-3);line-height:1.4}
 .np-fig a{color:var(--ink-2)}
 [data-theme="rot"] .np-bild{filter:grayscale(1) brightness(.45) sepia(1) hue-rotate(-50deg) saturate(8)}
+
+/* ---------- Desktop: Karte links, Spalte rechts ---------- */
+@media (min-width:1000px) and (min-height:600px){
+  body{background:var(--bg)}
+  #app{--col:clamp(400px,34vw,480px);width:100%;max-width:none;height:100vh;height:100dvh;margin:0;border:0;border-radius:0;box-shadow:none}
+  .stage{inset:0}
+  .stage[hidden]{display:block}
+  #sky{width:calc(100% - var(--col))}
+  .topbar{right:var(--col)}
+  .fabs.r{right:calc(var(--col) + 8px)}
+  .hint{left:calc((100% - var(--col)) / 2)}
+  .sheet{left:auto;right:0;top:0;bottom:var(--tab-h);width:var(--col);height:auto!important;border-radius:0;border:0;border-left:1px solid var(--line)}
+  .sheet .grab,#szBtn{display:none}
+  .sheet-head{cursor:default;padding-top:10px}
+  .page{left:auto;width:var(--col);border-left:1px solid var(--line);z-index:12}
+  .tabbar{left:auto;width:var(--col);border-left:1px solid var(--line)}
+  .detail{left:auto;right:0;top:0;bottom:var(--tab-h);width:var(--col);height:auto;border-radius:0;border:0;border-left:1px solid var(--line-2)}
+  .scrim{display:none!important}
+}
 </style>
 <div id="app" data-rm="0">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -910,6 +929,9 @@ function wxStamp(w){const a=(w&&w.abruf)||NP.wetter.abruf;if(!a)return 'noch nic
 function wxEnd(w){const d=new Date(Date.parse(w.openmeteo.start)+(w.openmeteo.n-1)*3600000);return d.toLocaleDateString('de-AT',{day:'numeric',month:'numeric'});}
 const RM_MQ=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):{matches:false};
 const reduced=()=>S.rmUser||RM_MQ.matches;
+/* Desktop: Karte links, feste Spalte rechts (siehe style.css, gleiche Grenze) */
+const DESK_MQ=window.matchMedia?window.matchMedia('(min-width:1000px) and (min-height:600px)'):{matches:false};
+const isDesk=()=>DESK_MQ.matches;
 
 /* ---------- Rechenkern: Astronomy Engine, mit eigenem Rückfall ---------- */
 const HAS_ASTRO=typeof Astronomy!=='undefined';
@@ -1200,7 +1222,7 @@ function camBasis(az0,alt0){const a=alt0*D2R,A=az0*D2R,ca=Math.cos(a),sa=Math.si
   return {fx:ca*sA,fy:ca*cA,fz:sa,ux:-sa*sA,uy:-sa*cA,uz:ca,rx:cA,ry:-sA};}
 function topInset(){return S.tab==='nacht'?72:62;}
 function layoutCam(){
-  VR={x:0,y:topInset(),w:CW,h:Math.max(90,CH-topInset()-sheetH)};
+  VR={x:0,y:topInset(),w:CW,h:Math.max(90,CH-topInset()-(isDesk()?0:sheetH))};
   const R=Math.max(40,Math.min(CW/2-30,VR.h/2-22));
   baseS=R/2;SC=baseS*cam.zoom;CX=VR.x+VR.w/2;CY=VR.y+VR.h/2;if(S.view==='pano'&&!ptrs.size){const p=panoParams();if(S.camT){S.camT.alt0=p.alt0;S.camT.zoom=p.zoom;}else{cam.alt0=p.alt0;cam.zoom=p.zoom;}SC=baseS*cam.zoom;}
   B=camBasis(cam.az0,cam.alt0);
@@ -1619,7 +1641,7 @@ function drawMoonCanvas(x,y,r,f,ang){
 
 /* ---------- Größe ---------- */
 function resizeCanvas(){
-  const st=$('#stage'),r=st.getBoundingClientRect();
+  const r=cv.getBoundingClientRect(); // die Karte selbst: am Desktop schmaler als die Bühne
   CW=Math.max(200,Math.round(r.width));CH=Math.max(300,Math.round(r.height));DPR=Math.min(window.devicePixelRatio||1,2);
   cv.width=Math.round(CW*DPR);cv.height=Math.round(CH*DPR);dirty=true;
 }
@@ -2106,7 +2128,7 @@ function cycleSnap(){
 (function bindSheetDrag(){
   const head=$('#sheetHead');let d=null;
   head.addEventListener('pointerdown',e=>{
-    if(e.target.closest('#playBtn')||e.target.closest('#szBtn'))return;
+    if(isDesk()||e.target.closest('#playBtn')||e.target.closest('#szBtn'))return;
     cap(head,e.pointerId);d={y0:e.clientY,h0:sheetH,moved:false,hist:[[performance.now(),e.clientY]]};
   });
   head.addEventListener('pointermove',e=>{
@@ -2595,7 +2617,7 @@ function setTab(tab){
   closeDetail();S.tab=tab;
   $$('.tab').forEach(b=>{if(b.dataset.tab===tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
   const map=isMapTab();
-  $('#stage').hidden=!map;
+  $('#stage').hidden=!map&&!isDesk(); // am Desktop bleibt die Karte neben den Seiten stehen
   ['ziele','plan','setup'].forEach(k=>{$('#pg-'+k).hidden=(k!==tab);});
   $('#pop').hidden=true;$('#fLayers').setAttribute('aria-expanded','false');
   if(map){
@@ -2717,7 +2739,7 @@ let lastNow=0;
 function loop(now){
   requestAnimationFrame(loop);
   const dt=Math.min(0.1,(now-lastNow)/1000||0.016);lastNow=now;tNow=now;
-  if(!D||!NV||!isMapTab())return;
+  if(!D||!NV||(!isMapTab()&&!isDesk()))return;
   stepSheet(dt);stepPlay(dt);
   if(S.follow){followUpdate();}
   stepCam(dt);
@@ -2757,7 +2779,7 @@ async function init(){
   setTab('nacht');
   bindSlider();
   const ro=new ResizeObserver(()=>{
-    if(!isMapTab()){renderPagesIfOpen();return;}
+    if(!isMapTab()){renderPagesIfOpen();if(!isDesk())return;resizeCanvas();dirty=true;return;}
     resizeCanvas();renderSlider();
     const w=bodyW();if(Math.abs(w-(init._w||0))>2){init._w=w;renderSheet();}
     S.snapName&&(sheetTarget=snapHeights()[S.snapName],sheetH=sheetTarget,applySheet());
@@ -2765,6 +2787,8 @@ async function init(){
   });
   ro.observe($('#app'));
   RM_MQ.addEventListener&&RM_MQ.addEventListener('change',()=>{$('#app').dataset.rm=reduced()?'1':'0';});
+  const deskHint=()=>{const hn=$('#hint');if(hn)hn.textContent=isDesk()?'Ziehen dreht · Mausrad zoomt · Klick wählt':'Ziehen dreht · zwei Finger zoomen · Tippen wählt';};deskHint();
+  DESK_MQ.addEventListener&&DESK_MQ.addEventListener('change',()=>{deskHint();setTab(S.tab);resizeCanvas();renderSheet();dirty=true;});
   requestAnimationFrame(loop);
   setTimeout(()=>{const hn=$('#hint');if(hn)hn.hidden=true;},7000);
   cv.addEventListener('pointerdown',()=>{const hn=$('#hint');if(hn)hn.hidden=true;},{once:true});
