@@ -1,0 +1,8 @@
+# Nachtplaner auf Strato: richtige Typen für die App-Dateien und kein Zwischenspeichern
+# von Seite und Hintergrunddienst, damit neue Versionen sofort ankommen.
+AddType application/manifest+json .webmanifest
+<IfModule mod_headers.c>
+  <FilesMatch "^(index\.html|sw\.js|manifest\.webmanifest)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>

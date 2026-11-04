@@ -1,4 +1,4 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#04060a"></head><body style="margin:0"><title>Nachtplaner</title>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#04060a"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="symbol-192.png" type="image/png"><link rel="apple-touch-icon" href="apple-touch-icon.png"></head><body style="margin:0"><title>Nachtplaner</title>
 <meta name="description" content="Nachtplanung für Astrofotografie: Himmel, Horizont, Wetter und Ziele">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
@@ -2792,6 +2792,10 @@ function wxNeu(){
 {const sl=selectLoc;selectLoc=function(id){sl(id);wetterAktualisieren(false);};}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)wetterAktualisieren(false);});
 wetterAktualisieren(false);
+/* Installierbar und offline: Hintergrunddienst nur in sicherer Umgebung (https oder Chrome-Ausnahme) */
+if('serviceWorker' in navigator&&window.isSecureContext){
+  navigator.serviceWorker.register('sw.js').catch(e=>console.warn('[Offline]',e));
+}
 
 })();
 </script>
