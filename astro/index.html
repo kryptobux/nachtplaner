@@ -351,6 +351,13 @@ kbd{font-family:var(--font-mono);font-size:12px;padding:1px 5px;border:1px solid
   .ztab .r{text-align:right}
   .ztab .s svg{display:block}
 }
+
+/* Fotokarte neben dem gewählten Ziel auf der Himmelskarte */
+.fotocard{position:absolute;z-index:5;width:128px;padding:0;border:1px solid var(--line-2);border-radius:10px;background:var(--panel);overflow:hidden;display:flex;flex-direction:column;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.fotocard[hidden]{display:none}
+.fotocard img{width:100%;height:88px;object-fit:cover;display:block;background:var(--panel-2)}
+.fotocard span{font-size:12px;font-weight:600;padding:5px 8px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+@media (min-width:1000px) and (min-height:600px){.fotocard{width:220px}.fotocard img{height:160px}}
 </style>
 <div id="app" data-rm="0">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -420,6 +427,7 @@ kbd{font-family:var(--font-mono);font-size:12px;padding:1px 5px;border:1px solid
     <div class="legend" id="legend"></div>
   </div>
   <div class="moonTip" id="moonTip" hidden></div>
+  <button class="fotocard" id="fotoCard" hidden aria-label="Ziel-Detail öffnen"><img class="np-bild" alt="" decoding="async"><span></span></button>
   <div class="hint" id="hint">Ziehen dreht · zwei Finger zoomen · Tippen wählt</div>
 
   <section class="sheet" id="sheet" aria-label="Nacht-Sheet">
@@ -987,7 +995,7 @@ function fmtDec(d){const s=d<0?'−':'+';d=Math.abs(d);const dd=Math.floor(d);co
 const CLOUD_LIM=30;
 const S={
   ni:0,t:600,sel:null,tab:'nacht',view:'polar',follow:false,playing:false,
-  layers:{lines:true,names:false,tracks:true,mask:true,clouds:true,grid:true,mw:true},
+  layers:{lines:true,names:false,tracks:true,mask:true,clouds:true,grid:true,mw:true,foto:true},
   mask:{min:30,azFrom:140,azTo:285},
   theme:'nacht',dim:0,rmUser:false,
   snap:{nacht:'half',himmel:'peek'},
@@ -2073,7 +2081,7 @@ function skyBodyHTML(){
   h+='<div class="sec"><h2>Bedienung</h2><p class="verdict-sub2" style="margin:0">Ziehen dreht den Himmel, zwei Finger zoomen, Tippen auf ein Ziel öffnet es hier. Alternativen: Tasten rechts auf der Karte, <b>−1 h</b> und <b>+1 h</b> unten, am Computer Mausrad und Pfeiltasten.</p></div>';
   return h;
 }
-const LAYERS=[['lines','Sternbilder'],['names','Namen'],['tracks','Zielbahnen'],['mask','Horizont'],['clouds','Wolken'],['grid','Raster'],['mw','Milchstraße']];
+const LAYERS=[['lines','Sternbilder'],['names','Namen'],['tracks','Zielbahnen'],['mask','Horizont'],['clouds','Wolken'],['grid','Raster'],['mw','Milchstraße'],['foto','Fotos']];
 function layerChipsHTML(){return LAYERS.map(([k,l])=>'<button class="chip" data-layer="'+k+'" aria-pressed="'+S.layers[k]+'">'+l+'</button>').join('');}
 let visKey='';
 function updateVisList(){
@@ -2332,6 +2340,23 @@ function syncViewButtons(){
 }
 
 /* ---------- Detail-Overlay (Ziele-Tab) ---------- */
+/* Fotokarte: folgt dem gewählten Ziel auf der Karte; ohne Bild zeigt sie den DSS-Ausschnitt */
+let fotoKey='';
+function updateFotoCard(){
+  const c=$('#fotoCard');if(!c)return;
+  const T=S.sel!=null?NV.targets[S.sel]:(isDesk()&&S.zsel!=null?NV.targets[S.zsel]:null);
+  const src=T&&T.z?((T.z.bild&&T.z.bild.bild)||T.z.dssq):null;
+  if(!S.layers.foto||!T||!src||!$('#stage').offsetParent){c.hidden=true;return;}
+  const alt=lerpArr(T.alt,S.t),az=lerpAz(T.az,S.t),v=hv(alt,az);
+  if(alt<-2||!pr(v[0],v[1],v[2])||PXY.x<0||PXY.x>CW||PXY.y<VR.y||PXY.y>VR.y+VR.h){c.hidden=true;return;}
+  if(fotoKey!==T.name+src){fotoKey=T.name+src;c.querySelector('img').src='bilder/'+src;c.querySelector('span').textContent=T.name+(T.z.bild&&T.z.bild.bild?'':' · DSS2');c.dataset.i=T.i;}
+  c.hidden=false;
+  const w=c.offsetWidth||170,h=c.offsetHeight||150,ox=cv.offsetLeft,oy=cv.offsetTop;
+  let x=PXY.x+22,y=PXY.y-h/2;
+  if(x+w>CW-56)x=PXY.x-22-w; // rechts ist kein Platz: links vom Ziel
+  x=clamp(x,58,CW-w-58);y=clamp(y,VR.y+4,VR.y+VR.h-h-4);
+  c.style.left=(ox+x).toFixed(0)+'px';c.style.top=(oy+y).toFixed(0)+'px';
+}
 function openDetail(i){
   S.detailI=i;const T=NV.targets[i],d=$('#detail');
   d.innerHTML='<div class="sheet-head"><div class="grab" style="height:26px;display:block;position:relative;cursor:default"></div></div><div class="sheet-body" id="detailBody"></div>';
@@ -2807,6 +2832,7 @@ document.addEventListener('click',e=>{
   if((el=t.closest('#dtNext'))){setStart(Rechnen.isoPlus(S.start,7));return;}
   if((el=t.closest('#railKeys'))){toggleKeys();return;}
   if((el=t.closest('#panelOpen'))){setPanel(true);return;}
+  if((el=t.closest('#fotoCard'))){openDetail(+el.dataset.i);return;}
   if((el=t.closest('#dhLoc'))){S.setupTab='orte';setTab('setup');return;}
   if((el=t.closest('[data-sel]'))){
     const i=+el.dataset.sel;
@@ -2902,7 +2928,7 @@ function loop(now){
   if(S.follow){followUpdate();}
   stepCam(dt);
   const drift=S.layers.clouds&&!reduced()&&cloudCover>3;
-  if(dirty||(drift&&now-lastDraw>48)){draw();dirty=false;lastDraw=now;}
+  if(dirty||(drift&&now-lastDraw>48)){draw();updateFotoCard();dirty=false;lastDraw=now;}
   if(uiDirty){uiDirty=false;updateTimeUI();}
 }
 
