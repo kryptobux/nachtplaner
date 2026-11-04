@@ -105,6 +105,7 @@ ol b{color:var(--ink)}
   <h1>Horizont</h1>
   <p class="note" id="resInfo"></p>
   <canvas id="resPolar" style="width:100%;max-width:340px;aspect-ratio:1;justify-self:center"></canvas>
+  <button class="btn primary" id="toPlan" hidden>In den Planer übernehmen</button>
   <textarea class="in mono" id="out" rows="8" readonly style="padding:10px 12px;min-height:180px"></textarea>
   <div class="bar" style="display:flex;gap:8px">
     <button class="btn primary" id="copy" style="flex:1">Text kopieren</button>
@@ -335,6 +336,21 @@ $('#save').addEventListener('click',()=>{
   a.href=URL.createObjectURL(b);a.download='horizont_'+new Date().toISOString().slice(0,10)+'.txt';document.body.appendChild(a);a.click();a.remove();
 });
 $('#again').addEventListener('click',()=>location.reload());
+
+/* Liegt der Nachtplaner unter derselben Adresse, teilen sich beide den Browserspeicher:
+   dann schreibt die Aufnahme das Profil direkt zum gewählten Ort des Planers. */
+const plan={get(k){try{const v=localStorage.getItem('nc_'+k);return v==null?null:JSON.parse(v);}catch(e){return null;}}};
+const planOrt=plan.get('locSel');
+if(planOrt){
+  const eigen=(plan.get('locs')||[]).find(l=>l.id===planOrt);
+  if(eigen&&!lat.value){lat.value=eigen.lat;lon.value=eigen.lon;}
+  const b=$('#toPlan');b.hidden=false;b.textContent='In den Planer übernehmen'+(eigen?' („'+eigen.name+'“)':'');
+  b.addEventListener('click',()=>{
+    const p=profile();if(!p)return;
+    try{localStorage.setItem('nc_hz_'+planOrt,JSON.stringify(p.val));}catch(e){b.textContent='Speichern fehlgeschlagen, bitte Text kopieren';return;}
+    location.href='../';
+  });
+}
 })();
 </script>
 </body>

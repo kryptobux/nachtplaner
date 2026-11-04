@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#04060a">
+<title>Horizont-Aufnahme</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Aufnahme mit Kamerabild und Fadenkreuz; Bedienleiste unten, Abdeckungsring und Panoramastreifen als Rückmeldung */
+:root{
+  --bg:#04060a;--panel:#0b1018;--panel-2:#131b28;--line:#1f2b3c;--line-2:#364962;
+  --ink:#e9eef5;--ink-2:#aab7c9;--ink-3:#7f8fa6;--accent:#4fd8c4;--warn:#e8b64d;--sun:#ffd27a;
+  --font-ui:"Barlow Semi Condensed","Arial Narrow","Roboto Condensed",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:16px/1.4 var(--font-ui);-webkit-tap-highlight-color:transparent}
+button,input,textarea{font:inherit;color:inherit}
+[hidden]{display:none!important}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.btn{min-height:48px;padding:0 18px;border-radius:10px;border:1px solid var(--line-2);background:var(--panel-2);font-weight:600;font-size:16px;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#03201c;font-weight:700}
+.btn.rec{background:#c8323a;border-color:#c8323a;color:#fff}
+.btn:disabled{opacity:.45}
+.btn:focus-visible,.in:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.in{width:100%;min-height:46px;border:1px solid var(--line-2);border-radius:8px;background:var(--bg);padding:0 12px;font-size:16px}
+.note{font-size:14px;color:var(--ink-2);margin:6px 0 0}
+.page{min-height:100%;padding:max(20px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));max-width:560px;margin:0 auto;display:grid;gap:16px;align-content:start}
+h1{font-size:32px;line-height:1.05;margin:4px 0 0;text-wrap:balance}
+h2{font-size:18px;margin:0}
+ol{margin:0;padding-left:22px;display:grid;gap:6px;color:var(--ink-2)}
+ol b{color:var(--ink)}
+.box{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--panel);display:grid;gap:8px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.err{border-color:var(--warn);color:var(--warn)}
+
+/* Aufnahmeansicht */
+#rec{position:fixed;inset:0;background:#000;overflow:hidden}
+#cam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#ov{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.hud{position:absolute;left:0;right:0;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+.hud.top{top:0;padding-top:max(10px,env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:flex-start;gap:10px;background:linear-gradient(rgba(0,0,0,.7),rgba(0,0,0,0))}
+.hud.bot{bottom:0;padding-bottom:max(12px,env(safe-area-inset-bottom));display:grid;gap:10px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.8) 30%)}
+.read{font-family:var(--font-mono);font-size:15px;line-height:1.3;text-shadow:0 1px 2px #000}
+.read b{font-size:24px;font-weight:500}
+.hint{font-size:15px;text-shadow:0 1px 2px #000;min-height:21px}
+.bar{display:flex;gap:8px}
+.bar .btn{flex:1}
+#strip{width:100%;height:84px;display:block;border-radius:8px;background:rgba(4,6,10,.72)}
+</style>
+</head>
+<body>
+
+<!-- Start: Erklärung, Ort, Abgleich -->
+<main class="page" id="start">
+  <div>
+    <div class="note mono">Nachtplaner · Werkzeug</div>
+    <h1>Horizont aufnehmen</h1>
+  </div>
+  <ol>
+    <li><b>Abgleichen:</b> Fadenkreuz auf Sonne oder Mond halten und tippen. Das korrigiert den Kompass, der am Balkongeländer gern 5–10° danebenliegt.</li>
+    <li><b>Aufnehmen:</b> Fadenkreuz auf die Kante zwischen Himmel und Hindernis halten und dich einmal ganz im Kreis drehen. Über Dächer hoch, in Lücken runter.</li>
+    <li><b>Übernehmen:</b> Den Text am Ende kopieren und im Nachtplaner unter Setup → Horizont → „Aus Datei oder Text übernehmen“ einfügen.</li>
+  </ol>
+  <div class="box">
+    <h2>Standort für den Abgleich</h2>
+    <div class="row2">
+      <label><span class="note">Breite</span><input class="in mono" id="lat" inputmode="decimal" placeholder="46.90"></label>
+      <label><span class="note">Länge</span><input class="in mono" id="lon" inputmode="decimal" placeholder="13.78"></label>
+    </div>
+    <button class="btn" id="gps">Standort vom Handy holen</button>
+    <p class="note" id="gpsMsg">Nur für die Position von Sonne und Mond. Die Koordinaten bleiben auf dem Handy.</p>
+  </div>
+  <button class="btn primary" id="go">Kamera und Sensoren starten</button>
+  <p class="note err box" id="startErr" hidden></p>
+  <p class="note">Nie mit Fernglas oder Teleskop in die Sonne schauen. Das Handy kurz auf die Sonne zu richten, ist für die Kamera unbedenklich.</p>
+</main>
+
+<!-- Aufnahme -->
+<section id="rec" hidden>
+  <video id="cam" playsinline muted autoplay></video>
+  <canvas id="ov"></canvas>
+  <div class="hud top">
+    <div class="read" id="read">Az <b>–</b><br>Höhe <b>–</b></div>
+    <div class="read" style="text-align:right" id="cal">ohne Abgleich</div>
+  </div>
+  <div class="hud bot">
+    <div class="hint" id="hint">Fadenkreuz auf Sonne oder Mond halten und abgleichen, oder gleich aufnehmen.</div>
+    <canvas id="strip"></canvas>
+    <div class="bar" id="barCal">
+      <button class="btn" id="calSun">Sonne abgleichen</button>
+      <button class="btn" id="calMoon">Mond abgleichen</button>
+    </div>
+    <div class="bar">
+      <button class="btn rec" id="recBtn">Aufnahme starten</button>
+      <button class="btn" id="done" disabled>Fertig</button>
+    </div>
+  </div>
+</section>
+
+<!-- Ergebnis -->
+<main class="page" id="res" hidden>
+  <h1>Horizont</h1>
+  <p class="note" id="resInfo"></p>
+  <canvas id="resPolar" style="width:100%;max-width:340px;aspect-ratio:1;justify-self:center"></canvas>
+  <button class="btn primary" id="toPlan" hidden>In den Planer übernehmen</button>
+  <textarea class="in mono" id="out" rows="8" readonly style="padding:10px 12px;min-height:180px"></textarea>
+  <div class="bar" style="display:flex;gap:8px">
+    <button class="btn primary" id="copy" style="flex:1">Text kopieren</button>
+    <button class="btn" id="save" style="flex:1">Als Datei speichern</button>
+  </div>
+  <p class="note">72 Zeilen „Azimut Höhe“ in Grad. Richtungen ohne Messpunkte sind aus den Nachbarn ergänzt und in der Grafik gestrichelt. Verdeckte Richtungen (Hauswand, Dach über dir) trägst du danach im Planer durch Malen zur Mitte ein.</p>
+  <button class="btn" id="again">Neue Aufnahme</button>
+</main>
+
+<script src="astronomy.browser.min.js"></script>
+<script>
+(function(){'use strict';
+const $=s=>document.querySelector(s);
+const D2R=Math.PI/180,R2D=180/Math.PI,BINS=72;
+const store={get(k,d){try{const v=localStorage.getItem('hz_'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('hz_'+k,JSON.stringify(v));}catch(e){}}};
+const fmt=(v,d=0)=>v==null||!isFinite(v)?'–':v.toFixed(d).replace('.',',');
+
+/* ---------- Zustand ---------- */
+let dir=null;            // geglättete Blickrichtung der Rückkamera [Ost, Nord, oben]
+let lastEvt=0,absolute=false;
+let offset=store.get('offset',null); // Kompasskorrektur in Grad (wahr minus gemessen)
+let recording=false,pts=[];          // Messpunkte [az, alt] mit Korrektur
+let wake=null;
+const doneBtn=$('#done');
+
+/* ---------- Ort ---------- */
+const lat=$('#lat'),lon=$('#lon');
+{const o=store.get('ort',null);if(o){lat.value=o.lat;lon.value=o.lon;}}
+const num=el=>{const v=parseFloat(String(el.value).replace(',','.'));return isFinite(v)?v:null;};
+$('#gps').addEventListener('click',()=>{
+  const m=$('#gpsMsg');
+  if(!navigator.geolocation){m.textContent='Dieses Gerät gibt keinen Standort heraus. Bitte Breite und Länge eintippen.';return;}
+  m.textContent='Standort wird geholt …';
+  navigator.geolocation.getCurrentPosition(p=>{
+    lat.value=p.coords.latitude.toFixed(4);lon.value=p.coords.longitude.toFixed(4);
+    store.set('ort',{lat:lat.value,lon:lon.value});m.textContent='Standort übernommen (±'+Math.round(p.coords.accuracy)+' m).';
+  },e=>{m.textContent='Kein Standort: '+(e.code===1?'Zugriff abgelehnt.':'nicht verfügbar.')+' Bitte Breite und Länge eintippen.';},{enableHighAccuracy:false,timeout:15000,maximumAge:600000});
+});
+[lat,lon].forEach(el=>el.addEventListener('change',()=>store.set('ort',{lat:lat.value,lon:lon.value})));
+
+/* ---------- Sensoren ----------
+   Gerätelage nach W3C (alpha um z, beta um x, gamma um y; Erde: x Ost, y Nord, z oben).
+   Die Rückkamera blickt entlang −z des Geräts; diese Richtung hängt nicht von der Bildschirmdrehung ab. */
+function camDir(a,b,g){
+  a*=D2R;b*=D2R;g*=D2R;
+  const ca=Math.cos(a),sa=Math.sin(a),cb=Math.cos(b),sb=Math.sin(b),cg=Math.cos(g),sg=Math.sin(g);
+  return [-ca*sg-sa*sb*cg, -sa*sg+ca*sb*cg, -cb*cg];
+}
+function onOri(e){
+  if(e.alpha==null||e.beta==null||e.gamma==null)return;
+  if(e.type==='deviceorientation'&&absolute)return; // absolute Werte haben Vorrang
+  if(e.type==='deviceorientationabsolute')absolute=true;
+  // Ohne absolute Werte ist Norden beliebig; der Abgleich mit Sonne oder Mond setzt ihn dann.
+  let a=e.alpha;
+  if(e.webkitCompassHeading!=null)a=360-e.webkitCompassHeading; // iOS
+  const d=camDir(a,e.beta,e.gamma);
+  if(!dir)dir=d;else{const k=0.25;for(let i=0;i<3;i++)dir[i]+=(d[i]-dir[i])*k;}
+  lastEvt=performance.now();
+  if(recording){const v=view();if(v&&v.alt>-15&&v.alt<89){pts.push([v.az,v.alt]);doneBtn.disabled=false;}}
+}
+function view(){
+  if(!dir)return null;
+  const n=Math.hypot(dir[0],dir[1],dir[2])||1;
+  const alt=Math.asin(Math.max(-1,Math.min(1,dir[2]/n)))*R2D;
+  let az=(Math.atan2(dir[0],dir[1])*R2D+360)%360;
+  if(offset!=null)az=(az+offset+360)%360;
+  return {az,alt};
+}
+
+/* ---------- Start ---------- */
+$('#go').addEventListener('click',async()=>{
+  // Nur iPhone fragt nach einer Freigabe; wird sie verweigert, meldet die Aufnahme später „Keine Sensordaten“.
+  let perm='';
+  try{
+    if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
+      const r=await DeviceOrientationEvent.requestPermission();if(r!=='granted')perm='Lagesensoren nicht freigegeben. ';
+    }
+  }catch(e){perm='Lagesensoren nicht freigegeben. ';}
+  if('ondeviceorientationabsolute' in window)window.addEventListener('deviceorientationabsolute',onOri);
+  window.addEventListener('deviceorientation',onOri);
+  try{
+    const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}},audio:false});
+    const v=$('#cam');v.srcObject=st;await v.play().catch(()=>{});
+  }catch(e){$('#hint').textContent='Kein Kamerabild ('+(e.name||'Fehler')+'). Die Aufnahme geht trotzdem, nur ohne Bild.';}
+  try{if(navigator.wakeLock)wake=await navigator.wakeLock.request('screen');}catch(e){}
+  $('#start').hidden=true;$('#rec').hidden=false;resize();
+  setTimeout(()=>{if(!lastEvt){$('#hint').textContent=perm+'Keine Sensordaten. Dieser Browser liefert keine Lage (nur Chrome auf Android und Safari auf iPhone, und nur über https).';}},2500);
+  requestAnimationFrame(loop);
+});
+
+/* ---------- Abgleich mit Sonne oder Mond ---------- */
+function bodyAzAlt(body){
+  const la=num(lat),lo=num(lon);
+  if(la==null||lo==null||typeof Astronomy==='undefined')return null;
+  const ob=new Astronomy.Observer(la,lo,0),t=Astronomy.MakeTime(new Date());
+  const eq=Astronomy.Equator(body,t,ob,true,true),h=Astronomy.Horizon(t,ob,eq.ra,eq.dec,'normal');
+  return {az:h.azimuth,alt:h.altitude};
+}
+function calibrate(body,name){
+  const h=$('#hint'),b=bodyAzAlt(body);
+  if(!b){h.textContent='Für den Abgleich fehlt der Standort. Zurück zum Start und Breite und Länge eintragen.';return;}
+  if(b.alt<1){h.textContent=name+' steht gerade unter dem Horizont ('+fmt(b.alt,0)+'°).';return;}
+  if(!dir){h.textContent='Noch keine Sensordaten.';return;}
+  const keep=offset;offset=null;const v=view();offset=keep;
+  const off=((b.az-v.az+540)%360)-180,dAlt=v.alt-b.alt;
+  offset=off;store.set('offset',offset);
+  h.textContent=name+' abgeglichen: Kompass um '+fmt(off,1)+'° korrigiert. Höhe weicht um '+fmt(dAlt,1)+'° ab'+(Math.abs(dAlt)>3?', nicht genau gezielt? Lieber wiederholen.':'.');
+  updCal();
+}
+function updCal(){$('#cal').innerHTML=offset==null?'ohne Abgleich':'Abgleich <b>'+(offset>=0?'+':'')+fmt(offset,1)+'°</b>';}
+updCal();
+$('#calSun').addEventListener('click',()=>calibrate('Sun','Sonne'));
+$('#calMoon').addEventListener('click',()=>calibrate('Moon','Mond'));
+
+/* ---------- Aufnahme ---------- */
+$('#recBtn').addEventListener('click',()=>{
+  recording=!recording;
+  const b=$('#recBtn');
+  // Anhalten und weiter aufnehmen behält die Punkte; eine neue Aufnahme beginnt mit „Neue Aufnahme“
+  if(recording){b.textContent='Aufnahme anhalten';$('#barCal').hidden=true;$('#hint').textContent='Kante entlangfahren und einmal ganz herumdrehen.';}
+  else{b.textContent='Weiter aufnehmen';$('#hint').textContent='Angehalten. Weiter aufnehmen oder Fertig.';}
+});
+
+function binsOf(p){
+  const b=Array.from({length:BINS},()=>[]);
+  for(const [az,alt] of p){const k=Math.round(az/5)%BINS;b[k].push(alt);}
+  return b;
+}
+const median=a=>{const s=a.slice().sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2;};
+
+/* ---------- Zeichnen ---------- */
+const ov=$('#ov'),cx=ov.getContext('2d'),sc=$('#strip'),sx=sc.getContext('2d');
+function resize(){
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  ov.width=ov.clientWidth*dpr;ov.height=ov.clientHeight*dpr;cx.setTransform(dpr,0,0,dpr,0,0);
+  sc.width=sc.clientWidth*dpr;sc.height=sc.clientHeight*dpr;sx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener('resize',resize);
+function loop(){
+  if($('#rec').hidden)return;
+  requestAnimationFrame(loop);
+  const W=ov.clientWidth,H=ov.clientHeight,v=view(),bins=binsOf(pts),filled=bins.filter(b=>b.length).length;
+  cx.clearRect(0,0,W,H);
+  // Abdeckungsring
+  const r=Math.min(W,H)*0.28,mx=W/2,my=H/2;
+  cx.lineWidth=10;
+  for(let k=0;k<BINS;k++){
+    const a0=(k*5-2.5-90)*D2R,a1=(k*5+2.5-90)*D2R;
+    cx.beginPath();cx.arc(mx,my,r,a0+0.01,a1-0.01);
+    cx.strokeStyle=bins[k].length?'rgba(79,216,196,.85)':'rgba(255,255,255,.18)';cx.stroke();
+  }
+  if(v){ // aktuelle Richtung auf dem Ring (Norden oben, im Uhrzeigersinn)
+    const a=(v.az-90)*D2R;cx.beginPath();cx.arc(mx+Math.cos(a)*r,my+Math.sin(a)*r,8,0,7);cx.fillStyle='#fff';cx.fill();
+  }
+  // Fadenkreuz
+  cx.lineWidth=2;cx.strokeStyle=recording?'#ff5a62':'#fff';
+  cx.beginPath();cx.moveTo(mx-28,my);cx.lineTo(mx-8,my);cx.moveTo(mx+8,my);cx.lineTo(mx+28,my);cx.moveTo(mx,my-28);cx.lineTo(mx,my-8);cx.moveTo(mx,my+8);cx.lineTo(mx,my+28);cx.stroke();
+  cx.beginPath();cx.arc(mx,my,3,0,7);cx.fillStyle=cx.strokeStyle;cx.fill();
+  // Werte
+  const stale=performance.now()-lastEvt>1000;
+  $('#read').innerHTML=v&&!stale?'Az <b>'+fmt(v.az,0)+'°</b><br>Höhe <b>'+fmt(v.alt,1)+'°</b>':'Az <b>–</b><br>Höhe <b>–</b>';
+  if(recording&&filled>=BINS)$('#hint').textContent='Rundum erfasst ('+pts.length+' Punkte). Lücken nachfahren oder Fertig.';
+  else if(recording)$('#hint').textContent=filled+' von 72 Richtungen erfasst · '+pts.length+' Punkte';
+  $('#done').disabled=!pts.length;
+  // Panoramastreifen: Azimut 0–360, Höhe 0–60°
+  const SW=sc.clientWidth,SH=sc.clientHeight,X=az=>az/360*SW,Y=al=>SH-6-Math.max(-5,Math.min(60,al))/60*(SH-12);
+  sx.clearRect(0,0,SW,SH);
+  sx.strokeStyle='rgba(255,255,255,.12)';sx.lineWidth=1;sx.beginPath();
+  for(let az=0;az<=360;az+=45){sx.moveTo(X(az),0);sx.lineTo(X(az),SH);}
+  sx.moveTo(0,Y(0));sx.lineTo(SW,Y(0));sx.moveTo(0,Y(30));sx.lineTo(SW,Y(30));sx.stroke();
+  sx.fillStyle='rgba(170,183,201,.8)';sx.font='11px '+getComputedStyle(document.body).getPropertyValue('--font-mono');
+  ['N','O','S','W'].forEach((t,i)=>sx.fillText(t,X(i*90)+3,12));sx.fillText('30°',3,Y(30)-3);
+  sx.fillStyle='rgba(79,216,196,.5)';
+  for(let i=Math.max(0,pts.length-4000);i<pts.length;i++)sx.fillRect(X(pts[i][0])-1,Y(pts[i][1])-1,2,2);
+  sx.strokeStyle='#4fd8c4';sx.lineWidth=2;sx.beginPath();let on=false;
+  for(let k=0;k<=BINS;k++){const b=bins[k%BINS];if(!b.length){on=false;continue;}const x=X(k*5),y=Y(median(b));if(on)sx.lineTo(x,y);else sx.moveTo(x,y);on=true;}
+  sx.stroke();
+  if(v){sx.fillStyle='#fff';sx.fillRect(X(v.az)-1,0,2,SH);}
+}
+
+/* ---------- Ergebnis ---------- */
+function profile(){
+  const bins=binsOf(pts),val=bins.map(b=>b.length?Math.max(0,Math.round(median(b)*10)/10):null),fill=val.map(v=>v!=null);
+  if(!fill.some(Boolean))return null;
+  // Lücken linear aus den Nachbarn ergänzen (rundum)
+  for(let k=0;k<BINS;k++){
+    if(val[k]!=null)continue;
+    let a=1;while(val[(k-a+BINS)%BINS]==null||!fill[(k-a+BINS)%BINS])a++;
+    let b=1;while(!fill[(k+b)%BINS])b++;
+    const va=val[(k-a+BINS)%BINS],vb=val[(k+b)%BINS];
+    val[k]=Math.round((va+(vb-va)*a/(a+b))*10)/10;
+  }
+  return {val,fill};
+}
+$('#done').addEventListener('click',()=>{
+  recording=false;const p=profile();if(!p)return;
+  const n=p.fill.filter(Boolean).length,d=new Date();
+  const kopf='# Horizont aufgenommen '+d.toLocaleString('de-AT')+', '+pts.length+' Punkte, '+n+' von 72 Richtungen gemessen'+(offset!=null?', Kompass abgeglichen '+(offset>=0?'+':'')+offset.toFixed(1)+'°':', ohne Kompassabgleich')+'\n# Azimut Höhe (Grad)';
+  $('#out').value=kopf+'\n'+p.val.map((v,k)=>(k*5)+' '+v).join('\n');
+  $('#resInfo').textContent=n+' von 72 Richtungen gemessen, '+pts.length+' Punkte'+(offset!=null?', Kompass um '+fmt(offset,1)+'° korrigiert.':', ohne Kompassabgleich (Richtungen können einige Grad danebenliegen).');
+  store.set('letzte',$('#out').value);
+  $('#rec').hidden=true;$('#res').hidden=false;
+  const st=$('#cam').srcObject;if(st)st.getTracks().forEach(t=>t.stop());
+  try{wake&&wake.release();}catch(e){}
+  drawPolar(p);
+});
+function drawPolar(p){
+  const c=$('#resPolar'),dpr=Math.min(2,window.devicePixelRatio||1),S=c.clientWidth;c.width=S*dpr;c.height=S*dpr;
+  const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);
+  const m=S/2,R=S/2-26,rad=al=>R*Math.tan((90-Math.max(0,Math.min(90,al)))*D2R/2);
+  const P=(al,az)=>[m-rad(al)*Math.sin(az*D2R),m-rad(al)*Math.cos(az*D2R)]; // Blick nach oben: Osten links
+  g.fillStyle='#131b28';g.beginPath();g.arc(m,m,R,0,7);g.fill();
+  g.fillStyle='#04060a';g.beginPath();
+  for(let k=0;k<=BINS;k++){const q=P(p.val[k%BINS],k*5);k?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]);}
+  g.closePath();g.fill();
+  for(let k=0;k<BINS;k++){const a=P(p.val[k],k*5),b=P(p.val[(k+1)%BINS],k*5+5);
+    g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.setLineDash(p.fill[k]&&p.fill[(k+1)%BINS]?[]:[4,4]);g.strokeStyle='#4fd8c4';g.lineWidth=2;g.stroke();}
+  g.setLineDash([3,4]);g.strokeStyle='#364962';g.lineWidth=1;[30,60].forEach(a=>{g.beginPath();g.arc(m,m,rad(a),0,7);g.stroke();});g.setLineDash([]);
+  g.fillStyle='#e9eef5';g.font='600 14px '+getComputedStyle(document.body).getPropertyValue('--font-ui');g.textAlign='center';
+  [['N',0],['O',90],['S',180],['W',270]].forEach(([t,az])=>{const q=P(-12,az);g.fillText(t,q[0],q[1]+5);});
+}
+$('#copy').addEventListener('click',()=>{
+  const ta=$('#out');
+  navigator.clipboard.writeText(ta.value).then(()=>{$('#copy').textContent='Kopiert';setTimeout(()=>$('#copy').textContent='Text kopieren',1800);},()=>{ta.select();});
+});
+$('#save').addEventListener('click',()=>{
+  const b=new Blob([$('#out').value+'\n'],{type:'text/plain'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download='horizont_'+new Date().toISOString().slice(0,10)+'.txt';document.body.appendChild(a);a.click();a.remove();
+});
+$('#again').addEventListener('click',()=>location.reload());
+
+/* Liegt der Nachtplaner unter derselben Adresse, teilen sich beide den Browserspeicher:
+   dann schreibt die Aufnahme das Profil direkt zum gewählten Ort des Planers. */
+const plan={get(k){try{const v=localStorage.getItem('nc_'+k);return v==null?null:JSON.parse(v);}catch(e){return null;}}};
+const planOrt=plan.get('locSel');
+if(planOrt){
+  const eigen=(plan.get('locs')||[]).find(l=>l.id===planOrt);
+  if(eigen&&!lat.value){lat.value=eigen.lat;lon.value=eigen.lon;}
+  const b=$('#toPlan');b.hidden=false;b.textContent='In den Planer übernehmen'+(eigen?' („'+eigen.name+'“)':'');
+  b.addEventListener('click',()=>{
+    const p=profile();if(!p)return;
+    try{localStorage.setItem('nc_hz_'+planOrt,JSON.stringify(p.val));}catch(e){b.textContent='Speichern fehlgeschlagen, bitte Text kopieren';return;}
+    location.href='../';
+  });
+}
+})();
+</script>
+</body>
+</html>

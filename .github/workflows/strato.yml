@@ -1,0 +1,40 @@
+# Lädt den Ordner astro/ per SFTP in den Strato-Webspace (Startverzeichnis /astro),
+# erreichbar unter http://astro.workersuites.de. Passwort nur als Repository-Secret.
+name: Nach Strato hochladen
+
+on:
+  push:
+    branches: [main]
+    paths: ['astro/**', '.github/workflows/strato.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: strato
+  cancel-in-progress: false
+
+jobs:
+  hochladen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: lftp installieren
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+      - name: Hochladen
+        env:
+          LFTP_PASSWORD: ${{ secrets.STRATO_SFTP_PASSWORD }}
+          SFTP_USER: ${{ secrets.STRATO_SFTP_USER }}
+          SFTP_HOST: ${{ secrets.STRATO_SFTP_HOST }}
+        run: |
+          test -n "$LFTP_PASSWORD" && test -n "$SFTP_USER" && test -n "$SFTP_HOST"
+          # Sicherung: Der Zugang muss im Ordner /astro landen, nicht im Wurzelverzeichnis des Webspace.
+          liste=$(lftp --env-password -u "$SFTP_USER" "sftp://$SFTP_HOST" -e "set sftp:auto-confirm yes; cls -1; bye")
+          echo "$liste"
+          if echo "$liste" | grep -qE '^(putzcompany|mariaschroeder|STRATO-apps|astro)/?$'; then
+            echo "Abbruch: Der SFTP-Zugang zeigt auf das Wurzelverzeichnis, nicht auf /astro." >&2; exit 1
+          fi
+          # cache7/ legt wetter7.php auf dem Server an; nicht anfassen. Ohne --delete bleibt alles Fremde liegen.
+          lftp --env-password -u "$SFTP_USER" "sftp://$SFTP_HOST" -e "
+            set sftp:auto-confirm yes; set net:max-retries 2; set net:timeout 30;
+            mirror -R --verbose --exclude-glob cache7/ astro/ . ;
+            cls -l ;
+            bye"
